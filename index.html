@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>অর্ডার দিন</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange: #ff7529;
+    --red: #ff1a3c;
+    --ink: #2b1a14;
+    --muted: #7a6a62;
+    --tint: #fff1e6;
+    --line: #ffd2b3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--tint);
+    font-family: "Hind Siliguri", system-ui, sans-serif;
+    color: var(--ink);
+  }
+
+  /* উপরের কমলা অংশ */
+  .top {
+    background: var(--orange);
+    color: #fff;
+    text-align: center;
+    padding: 34px 20px 70px;
+  }
+  .top .shop { font-size: 16px; font-weight: 500; opacity: .95; }
+  .top h1 { margin: 6px 0 0; font-size: 30px; font-weight: 700; line-height: 1.25; }
+
+  /* সাদা কার্ড */
+  .card {
+    max-width: 440px;
+    margin: -44px auto 30px;
+    background: #fff;
+    border: 3px solid var(--orange);
+    border-radius: 18px;
+    padding: 24px 20px 26px;
+    box-shadow: 0 10px 28px rgba(255,117,41,.22);
+  }
+
+  label { display: block; margin: 0 0 8px; font-size: 17px; font-weight: 600; }
+  .field + .field { margin-top: 20px; }
+
+  input {
+    width: 100%;
+    padding: 14px 16px;
+    font: 600 24px "Hind Siliguri", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--tint);
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    letter-spacing: .5px;
+  }
+  input::placeholder { color: #c9b6aa; font-weight: 400; }
+  input:focus { outline: none; border-color: var(--red); background: #fff; }
+  input.bad { border-color: var(--red); background: #fff0f2; }
+
+  .hint { margin-top: 6px; font-size: 14px; color: var(--muted); min-height: 20px; }
+  .hint.bad { color: var(--red); font-weight: 600; }
+
+  /* দ্রুত টাকা বাছাই */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip {
+    padding: 8px 16px;
+    font: 600 17px "Hind Siliguri", system-ui, sans-serif;
+    color: var(--orange);
+    background: #fff;
+    border: 2px solid var(--orange);
+    border-radius: 999px;
+  }
+  .chip:active { background: var(--orange); color: #fff; }
+
+  #send {
+    width: 100%;
+    margin-top: 26px;
+    padding: 16px;
+    font: 700 22px "Hind Siliguri", system-ui, sans-serif;
+    color: #fff;
+    background: var(--red);
+    border: 0;
+    border-radius: 14px;
+    box-shadow: 0 6px 0 #c4122d;
+    transition: transform .08s, box-shadow .08s;
+  }
+  #send:active { transform: translateY(4px); box-shadow: 0 2px 0 #c4122d; }
+  #send:disabled { opacity: .65; }
+  #err { margin-top: 14px; text-align: center; font-size: 17px; font-weight: 600; color: var(--red); min-height: 24px; }
+
+  /* সফল হলে এই অংশ দেখাবে */
+  #done { display: none; text-align: center; padding: 10px 0 4px; }
+  .tick {
+    width: 84px; height: 84px; margin: 0 auto 14px;
+    border-radius: 50%;
+    background: #1a9a46; color: #fff;
+    font-size: 48px; line-height: 84px;
+  }
+  #done h2 { margin: 0 0 6px; font-size: 26px; }
+  #done p { margin: 0 0 20px; color: var(--muted); font-size: 17px; }
+  #again {
+    padding: 12px 26px;
+    font: 600 18px "Hind Siliguri", system-ui, sans-serif;
+    color: var(--orange); background: #fff;
+    border: 2px solid var(--orange); border-radius: 12px;
+  }
+
+  @media (prefers-reduced-motion: reduce) { #send { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="shop" id="shopName">আমার দোকান</div>
+  <h1>এমাউন্ট ও পেন্ডিং অর্ডার</h1>
+</div>
+
+<div class="card">
+  <div id="formPart">
+    <div class="field">
+      <label for="number">আপনার মোবাইল নাম্বার</label>
+      <input id="number" type="tel" inputmode="numeric" maxlength="11" placeholder="01XXXXXXXXX" autocomplete="off">
+      <div class="hint" id="numHint"></div>
+    </div>
+
+    <div class="field">
+      <label for="amount">টাকার পরিমাণ</label>
+      <input id="amount" type="tel" inputmode="numeric" maxlength="6" placeholder="যেমন: 500" autocomplete="off">
+      <div class="chips">
+        <button type="button" class="chip" data-v="100">১০০</button>
+        <button type="button" class="chip" data-v="500">৫০০</button>
+        <button type="button" class="chip" data-v="1000">১০০০</button>
+        <button type="button" class="chip" data-v="2000">২০০০</button>
+        <button type="button" class="chip" data-v="5000">৫০০০</button>
+      </div>
+    </div>
+
+    <button id="send" type="button">অর্ডার পাঠান</button>
+    <div id="err"></div>
+  </div>
+
+  <div id="done">
+    <div class="tick">✓</div>
+    <h2>অর্ডার পাঠানো হয়েছে</h2>
+    <p>দোকানদার একটু পরেই দেখবেন</p>
+    <button id="again" type="button">আরেকটি অর্ডার</button>
+  </div>
+</div>
+
+<script>
+  // ====== এই তিনটা লাইন আপনাকে নিজে বসাতে হবে ======
+  var BOT_TOKEN = "8518706362:AAE38tpGIAMJNokxXDFvFOHxSUI54ZeSOiU";
+  var CHAT_ID   = "7413998841";
+  var SHOP_NAME = "আমার দোকান";
+  // ==================================================
+
+  document.getElementById("shopName").textContent = SHOP_NAME;
+
+  var numEl = document.getElementById("number");
+  var amtEl = document.getElementById("amount");
+  var numHint = document.getElementById("numHint");
+  var errEl = document.getElementById("err");
+  var btn = document.getElementById("send");
+
+  // বাংলা সংখ্যা লিখলে ইংরেজিতে বদলে দেয়, আর সংখ্যা ছাড়া সব বাদ দেয়
+  function toEnglishDigits(s) {
+    var bn = "০১২৩৪৫৬৭৮৯";
+    return s.replace(/[০-৯]/g, function (d) { return bn.indexOf(d); }).replace(/[^0-9]/g, "");
+  }
+  numEl.addEventListener("input", function () {
+    numEl.value = toEnglishDigits(numEl.value);
+    numEl.classList.remove("bad");
+    numHint.className = "hint";
+    numHint.textContent = numEl.value.length ? numEl.value.length + "/১১ ডিজিট" : "";
+  });
+  amtEl.addEventListener("input", function () {
+    amtEl.value = toEnglishDigits(amtEl.value);
+    amtEl.classList.remove("bad");
+  });
+
+  // দ্রুত টাকার বাটন
+  document.querySelectorAll(".chip").forEach(function (c) {
+    c.addEventListener("click", function () {
+      amtEl.value = c.getAttribute("data-v");
+      amtEl.classList.remove("bad");
+    });
+  });
+
+  btn.addEventListener("click", function () {
+    var number = numEl.value;
+    var amount = amtEl.value;
+    errEl.textContent = "";
+
+    if (!/^01[3-9][0-9]{8}$/.test(number)) {
+      numEl.classList.add("bad");
+      numHint.className = "hint bad";
+      numHint.textContent = "01 দিয়ে শুরু করে ১১ ডিজিটের নাম্বার দিন";
+      numEl.focus();
+      return;
+    }
+    if (!amount || Number(amount) <= 0) {
+      amtEl.classList.add("bad");
+      amtEl.focus();
+      errEl.textContent = "টাকার পরিমাণ দিন";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "পাঠানো হচ্ছে...";
+
+    var text = "🔔 পেন্ডিং অর্ডার\n📱 নাম্বার: " + number + "\n💰 টাকা: " + amount;
+
+    fetch("https://api.telegram.org/bot" + BOT_TOKEN + "/sendMessage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: CHAT_ID, text: text })
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.ok) {
+        document.getElementById("formPart").style.display = "none";
+        document.getElementById("done").style.display = "block";
+      } else {
+        errEl.textContent = "পাঠানো যায়নি, দোকানদারকে জানান";
+      }
+    })
+    .catch(function () {
+      errEl.textContent = "ইন্টারনেট সমস্যা, আবার চেষ্টা করুন";
+    })
+    .then(function () {
+      btn.disabled = false;
+      btn.textContent = "অর্ডার পাঠান";
+    });
+  });
+
+  document.getElementById("again").addEventListener("click", function () {
+    numEl.value = "";
+    amtEl.value = "";
+    numHint.textContent = "";
+    document.getElementById("done").style.display = "none";
+    document.getElementById("formPart").style.display = "block";
+  });
+</script>
+
+</body>
+</html>
